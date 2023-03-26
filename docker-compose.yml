@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  # A container running Python (see: `Dockerfile`).
+  app:
+    container_name: app  # defines <name> for `docker exec -it <name> bash`
+    build: { context: "." }  # uses `Dockerfile` in this folder
+    ports: [ "8000:80" ]  # format: "HOST_PORT:CONTAINER_PORT"
+    volumes: [ ".:/code" ]  # format: "HOST_PATH:CONTAINER_PATH"
+
+  # A container running MongoDB (see: https://hub.docker.com/_/mongo).
+  # Note: `${VARIABLE_NAME}` refers to an environment variable.
+  mongo:
+    container_name: mongo
+    image: mongo
+    restart: unless-stopped
+    ports: [ "27017:27017" ]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}

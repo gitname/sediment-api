@@ -1,0 +1,12 @@
+# JetBrains IDE files:
+/.idea
+
+# Python virtual environment:
+/venv
+
+# Instance-specific configuration:
+/.env
+
+# Cache folders:
+.pytest_cache
+.mypy_cache
