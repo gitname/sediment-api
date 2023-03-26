@@ -79,10 +79,10 @@ def db_client(monkeypatch: pytest.MonkeyPatch) -> Iterator[MongoClient]:
 @pytest.fixture
 def temp_file_path() -> Iterator[Path]:
     """
-    Creates a closed, empty, temporary file. Yields its file path.
+    Creates a closed, empty, temporary file.
+    Yields the path to the file.
     Deletes the file after the dependent test ends.
     """
-
     # Create a temporary file that does not automatically get deleted when closed.
     # Reference: https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
     file = NamedTemporaryFile(delete=False)
