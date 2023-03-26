@@ -11,15 +11,15 @@
   * [Table of contents](#table-of-contents)
   * [Overview](#overview)
   * [Usage](#usage)
-    * [Demonstration usage](#demonstration-usage)
-    * [General usage](#general-usage)
+    * [Exercise-specific](#exercise-specific)
+    * [General](#general)
   * [Development](#development)
     * [Environment](#environment)
     * [Testing](#testing)
     * [Static type checking](#static-type-checking)
     * [Code formatting](#code-formatting)
     * [Dependencies](#dependencies)
-    * [Roadmap](#roadmap)
+  * [Roadmap](#roadmap)
 <!-- TOC -->
 
 ## Overview
@@ -31,7 +31,7 @@ and provide access to that data via an HTTP API.
 The scripts are:
 
 1. `parser/parser.py`: A file parser people can use to extract data from a CSV file and insert it into a database
-2. `server/server.py`: A web server people can use to provide access to that data via an HTTP API
+2. `server/server.py`: A web server people can use to access that data via an HTTP API
 
 Here's a diagram showing how data flows into, between, and out of those scripts.
 
@@ -68,7 +68,7 @@ flowchart LR
 
 ## Usage
 
-### Demonstration usage
+### Exercise-specific
 
 Here's how you can demonstrate the behavior described in the exercise prompt.
 
@@ -85,24 +85,22 @@ Here's how you can demonstrate the behavior described in the exercise prompt.
    ```
    > **Note:** That command will run the containers in the foreground, taking over your console. You can open a new
    > console to issue the remaining commands.
-
 6. Run the parser (in the `app` container).
    ```shell
    docker exec -it app python parser/parser.py parser/example_data/WHONDRS_S19S_Sediment_GrainSize.csv
    ```
 7. In a web browser, visit http://localhost:8000/samples/S19S_0001_BULK-D
-   
    - The web browser will show a sample in JSON format.
 
-### General usage
+### General
 
 Here's how you can use the system in general.
 
-1. Do steps 1-5 shown in the "Demonstration usage" section above.
+1. Do steps 1-5 shown in the "Exercise-specific" section above.
 2. (Optional) Put a custom CSV file you want to parse, anywhere within the repository's file tree 
    (e.g. at `parser/example_data/samples.csv`.
-   > **Note:** That will make the file accessible from within the `app` container. (All files within the repository's
-   > file tree are accessible from within the `app` container, per the volume mapping defined in `docker-compose.yml`.)
+   > **Note:** All files within the repository's file tree are accessible from within the `app` container,
+   > per the `volumes` mapping defined in `docker-compose.yml`.
 3. Run the parser, specifying the path to the CSV file you want to parse.
    ```shell
    # Specify the path as a relative path based upon the repository root (e.g. parser/example_data/samples.csv).
@@ -116,7 +114,7 @@ Instructions for doing those things are in the "Development" section below.
 
 ## Development
 
-> **Note:** Unless otherwise specified, all commands shown below are written under the assumption you are in
+> **Note:** Unless otherwise specified, all commands shown in this section are written under the assumption you are in
 > the root folder of the repository.
 
 ### Environment
@@ -136,14 +134,14 @@ You can instantiate the development environment by issuing the following command
 ```shell
 docker-compose up
 
-# Or, if you've made changes to the Dockerfile:
+# Or, if you've made changes to the Dockerfile or `requirements.txt`:
 docker-compose up --build
 ```
 
 > **Note:** That will cause Docker to instantiate a container for each service described in `docker-compose.yml`.
 
 With the development environment up and running, you can access a `bash` shell running on the `app` container
-(i.e. the container that has Python and all the script dependencies installed) by issuing the following command on the Docker host:
+(i.e. the container that has Python and all the script dependencies installed) by issuing the following command:
 
 ```shell
 docker exec -it app bash
@@ -170,7 +168,7 @@ docker exec -it app pytest -v
 You can use [mypy](https://mypy.readthedocs.io/en/latest/) to perform static type checking on the Python code in this
 repository.
 
-With the development environment up and running, you can run **perform static type checking** by issuing the following
+With the development environment up and running, you can **perform static type checking** by issuing the following
 command:
 
 ```shell
@@ -180,6 +178,8 @@ mypy
 # Or, from the Docker host:
 docker exec -it app mypy
 ```
+
+> Note: When you run `mypy` as shown above, it will run according to the configuration specified in `mypy.ini`.
 
 ### Code formatting
 
@@ -197,8 +197,6 @@ black .
 # Or, from the Docker host:
 docker exec -it app black .
 ```
-
-> Note: When you run `mypy` as shown above, it will run according to the configuration specified in `mypy.ini`.
 
 ### Dependencies
 
@@ -231,14 +229,14 @@ docker exec -it app pip freeze > requirements.txt
 > installed by `pip` when I installed the packages listed above. In other words, they are "dependencies of
 > dependencies" (i.e. dependencies of the packages listed above).
 
-### Roadmap
+## Roadmap
 
 Here are some things I am considering doing for this project.
 
 1. Create a Pydantic model for the "sample" object and use it to
    (a) [validate and sanitize](https://docs.pydantic.dev/usage/validators/) the data extracted from the CSV file
    (i.e. `"-9999" → None`); (b) display the API response's
-   [JSON schema](https://fastapi.tiangolo.com/tutorial/response-model/#see-it-in-the-docs)/shape in the API docs and
+   [JSON schema](https://fastapi.tiangolo.com/tutorial/response-model/#see-it-in-the-docs) in the API docs and
    (c) automatically  [filter out](https://fastapi.tiangolo.com/tutorial/response-model/#fastapi-data-filtering)
    the `_id` field from the API response. Item (a) would happen in `parser.py` and items (b) and (c) would happen
    in `server.py`.
