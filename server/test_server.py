@@ -13,7 +13,9 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)  # automatically "used" by each test
 def seeded_db(monkeypatch: pytest.MonkeyPatch) -> Iterator[Database]:
     """
-    Patches the database name environment variable; then yields a handle to a seeded test database.
+    Patches the database name environment variable to refer to a test database.
+    Seeds the test database.
+    Yields a handle to the seeded test database.
     Deletes the test database after the dependent test ends.
     """
     # Patch a specific environment variable so both the test and the app-under-test use a temporary database.

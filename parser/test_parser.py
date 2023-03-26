@@ -54,7 +54,8 @@ def example_samples() -> List[dict]:
 @pytest.fixture
 def db_client(monkeypatch: pytest.MonkeyPatch) -> Iterator[MongoClient]:
     """
-    Patches the database name environment variables; and yields a MongoDB client.
+    Patches the database name environment variable to refer to a test database.
+    Yields a MongoDB client.
     Deletes the test database after the dependent test ends.
     """
     # Patch a specific environment variable so both the test and the app-under-test use a temporary database.
