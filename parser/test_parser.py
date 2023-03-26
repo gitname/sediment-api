@@ -198,13 +198,17 @@ class TestIsAtLeastZeroWhenFloat:
     def test_it_detects_valid_strings(self):
         assert is_at_least_zero_when_float("0") is True
         assert is_at_least_zero_when_float("-0") is True
+        assert is_at_least_zero_when_float("+0") is True  # leading + on zero
         assert is_at_least_zero_when_float("1") is True
+        assert is_at_least_zero_when_float("+1") is True  # leading +
         assert is_at_least_zero_when_float("1.") is True  # trailing period
         assert is_at_least_zero_when_float("0.1") is True
         assert is_at_least_zero_when_float("1.1") is True
         assert is_at_least_zero_when_float("9999") is True
         assert is_at_least_zero_when_float("1e23") is True  # scientific notation
         assert is_at_least_zero_when_float("1E23") is True
+        assert is_at_least_zero_when_float("1_000") is True  # _ for grouping (PEP 515)
+        assert is_at_least_zero_when_float("1_3_5_7") is True  # major seven chord
         assert is_at_least_zero_when_float(" 1 ") is True  # surrounding whitespace
 
     def test_it_detects_invalid_strings(self):
@@ -218,6 +222,10 @@ class TestIsAtLeastZeroWhenFloat:
         assert is_at_least_zero_when_float(" ") is False
         assert is_at_least_zero_when_float("1 2") is False  # mid-string whitespace
         assert is_at_least_zero_when_float("1+1") is False  # operation
+        assert is_at_least_zero_when_float("1,000") is False  # comma
+        assert is_at_least_zero_when_float("_1000") is False  # leading _
+        assert is_at_least_zero_when_float("1000_") is False  # trailing _
+        assert is_at_least_zero_when_float("1__000") is False  # double _
         assert is_at_least_zero_when_float("(1)") is False
 
 
