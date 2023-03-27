@@ -45,27 +45,23 @@ def parse_csv_file(file_path: Path) -> List[dict]:
     sanitized_rows: List[dict] = []
 
     with open(file_path, newline="") as f:
-        # Read the column names from the first row of the CSV file.
-        reader = csv.reader(f)
-        col_names = next(reader)
-
-        # Read the sample data from the remaining rows of the CSV file.
-        dict_reader: Iterable[dict] = csv.DictReader(f, fieldnames=col_names)
+        # Parse each row of the CSV file (except the first row) into a dictionary,
+        # using the column names from the first row as the dictionary's keys.
+        dict_reader: Iterable[dict] = csv.DictReader(f)
         for row in dict_reader:
-            sanitized_row = dict()
-
-            # Build a dictionary consisting of this row's values,
-            # in which invalid values are represented by `None`.
+            # Build a "sanitized" dictionary based upon this row (i.e. a dictionary
+            # in which invalid values from this row are represented by `None`).
             #
             # Note: A value is invalid unless either:
             #       (a) it is in a metadata column (e.g. the "Sample_ID" column), or
             #       (b) when parsed as a float, it is >= 0 (e.g. "-1" is invalid).
             #
-            for col_name, value in row.items():
+            sanitized_row = dict()
+            for col_name, raw_value in row.items():
                 if col_name in METADATA_COLUMN_NAMES:
-                    sanitized_row[col_name] = value  # use as-is
-                elif is_at_least_zero_when_float(value):
-                    sanitized_row[col_name] = value  # use as-is
+                    sanitized_row[col_name] = raw_value  # use as-is
+                elif is_at_least_zero_when_float(raw_value):
+                    sanitized_row[col_name] = raw_value  # use as-is
                 else:
                     sanitized_row[col_name] = None  # use `None`
 
