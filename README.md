@@ -243,18 +243,20 @@ The table below contains the names of all the packages I explicitly installed vi
 
 Here are some things I am considering doing for this project.
 
-1. Create a Pydantic model for the "sample" object and use it to
+1. Create a Pydantic model representing the "sample" object and use it to
    (a) [validate and sanitize](https://docs.pydantic.dev/usage/validators/) the data extracted from the CSV file
-   (i.e. `"-9999" → None`); (b) display the API response's
+   (e.g. `"-9999" → None`); (b) display the API response's
    [JSON schema](https://fastapi.tiangolo.com/tutorial/response-model/#see-it-in-the-docs) in the API docs and
-   (c) automatically  [filter out](https://fastapi.tiangolo.com/tutorial/response-model/#fastapi-data-filtering)
+   (c) [filter out](https://fastapi.tiangolo.com/tutorial/response-model/#fastapi-data-filtering)
    the `_id` field from the API response. Item (a) would happen in `parser.py` and items (b) and (c) would happen
-   in `server.py`.
-2. Update the parser to strip leading/trailing whitespace from the values extracted from the CSV file.
-3. Update the parser so the call to `insert_many` is wrapped within a `try/except`. Currently, trying to insert a sample
-   whose `Study_Code` and `Sample_ID` (together) match those of an existing sample, crashes the parser (since the
-   `pymongo.errors.BulkWriteError` exception is not being caught). That exception is raised because the MongoDB
-   collection has a "unique" index consisting of those two fields.
+   in `server.py`. Items (a) and (c) are already happening, but not via a Pydantic model.
+2. Update the parser to strip leading and trailing whitespace from the values extracted from the CSV file
+   (i.e. `" 1.23 " → "1.23"`).
+3. Update the parser so the call to `insert_many` is in a `try` block. Currently, trying to insert a sample
+   whose `Study_Code` and `Sample_ID` (together) match those of an existing sample, causes `pymongo` to raise a 
+   [`pymongo.errors.BulkWriteError`](https://pymongo.readthedocs.io/en/stable/api/pymongo/errors.html#pymongo.errors.BulkWriteError)
+   exception because the collection has a "unique" index consisting of those two fields. Since that exception is not
+   being caught, the parser crashes.
 4. Resolve the conceptual issue resulting from the existence of an API endpoint that returns a sample specified by its
    `Sample_ID` alone, and the absence of a unique index on that field alone. Currently, the database can
    contain multiple records having the same `Sample_ID` value, as long as they have different `Study_Code` values.
