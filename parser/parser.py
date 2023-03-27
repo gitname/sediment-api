@@ -8,7 +8,7 @@ from pymongo.results import InsertManyResult
 from rich.console import Console  # Note: `rich` is installed as part of `typer[all]`
 import typer
 
-# Create a `Console` instance, upon which I can call `console.log` to print fancy messages.
+# Create a `Console` instance, which I can use to print fancy messages to the console.
 console = Console()
 
 # Load variables defined in the `.env` file, into the `os.environ` dictionary.
@@ -16,7 +16,7 @@ console = Console()
 # Reference: https://github.com/theskumar/python-dotenv#getting-started
 load_dotenv(verbose=True)
 
-# Names of columns whose values this script will use as-is (i.e. will not sanitize).
+# Names of columns whose values this script will use verbatim (i.e. will not sanitize).
 METADATA_COLUMN_NAMES = ["Study_Code", "Sample_ID"]
 
 
