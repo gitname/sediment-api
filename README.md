@@ -98,16 +98,19 @@ Here's how you can produce the behavior described in the exercise prompt.
 Here's how you can use the system in general.
 
 1. Do steps 1-5 shown in the "Exercise-specific" section above.
-2. (Optional) Put a custom CSV file you want to parse, anywhere within the repository's file tree 
-   (e.g. at `parser/example_data/samples.csv`.
+2. (Optional) Put a custom CSV file you want to parse, anywhere within the repository's file tree.
    > **Note:** All files within the repository's file tree are accessible from within the `app` container,
-   > per the `volumes` mapping defined in `docker-compose.yml`.
+   > per the `volumes` mapping defined in `docker-compose.yml` (within the `app` container, the root folder
+   > of the repository is located at `/code`).
 3. Run the parser, specifying the path to the CSV file you want to parse.
    ```shell
-   # Specify the path as a relative path based upon the repository root (e.g. parser/example_data/samples.csv).
+   # Specify the path as it would be specified within the `app` container.
    docker exec -it app python parser/parser.py <path_to_csv_file>
    ```
-4. Submit an HTTP GET request to a URL having the format: `http://localhost:8000/samples/<Sample_ID>`
+   > **Note:** You can specify the path as either an absolute path, using `/code` to refer to the root folder of the
+   > repository (e.g. `/code/path/to/file.csv`); or a relative path, relative to the root folder of the repository
+   > (e.g. `./path/to/file.csv`).
+4. Submit an HTTP GET request to a URL having the format: `http://localhost:8000/samples/<sample_id>`
 5. (Optional) Visit the **interactive API documentation** at http://localhost:8000/docs
 
 You can also **run tests**, **perform static type checking**, and **format the code**.
