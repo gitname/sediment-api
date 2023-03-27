@@ -1,0 +1,23 @@
+name: Run tests
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: python:3.10-slim
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Create `.env` file
+        run: cp .env.example .env
+      - name: Run tests
+        run: pytest -v
+    services:
+      mongo:
+        image: mongo
+        ports: [ "27017:27017" ]
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: password
