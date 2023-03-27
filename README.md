@@ -244,7 +244,7 @@ The table below contains the names of all the packages I explicitly installed vi
 
 ## Roadmap
 
-Here are some things I am considering doing for this project.
+Here are some additional things I'm thinking about doing in this repository:
 
 1. Create a Pydantic model representing the "sample" object and use it to
    (a) [validate and sanitize](https://docs.pydantic.dev/usage/validators/) the data extracted from the CSV file
@@ -259,8 +259,8 @@ Here are some things I am considering doing for this project.
    whose `Study_Code` and `Sample_ID` (together) match those of an existing sample, causes `pymongo` to raise a 
    [`pymongo.errors.BulkWriteError`](https://pymongo.readthedocs.io/en/stable/api/pymongo/errors.html#pymongo.errors.BulkWriteError)
    exception because the collection has a "unique" index consisting of those two fields. Since that exception is not
-   being caught, the parser crashes.
-4. Resolve the issue resulting from the combination of (a) the presence of an API endpoint that returns a
+   being caught anywhere, the parser crashes.
+4. Resolve the inconsistency between (a) the presence of an API endpoint that returns a
    sample specified by its `Sample_ID` alone and (b) the absence of a "unique" index on that field alone. Currently, a
    collection can contain multiple records having the same `Sample_ID` value,
    as long as their `Study_Code` values differ from one another.
