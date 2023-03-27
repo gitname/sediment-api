@@ -52,7 +52,14 @@ def get_sample(
     db = mongo_client[env["MONGO_DATABASE_NAME"]]
     collection = db[env["MONGO_COLLECTION_NAME"]]
     sample_mapping = collection.find_one({"Sample_ID": sample_id})
-    if sample_mapping is not None:
+
+    # Return the sample, or return an error if the sample was not found.
+    if sample_mapping is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Failed to find a sample having Sample_ID: '{sample_id}'",
+        )
+    else:
         # Return a version of the result that does not contain the `_id` item,
         # since (a) that item is not serializable to JSON (it's an `ObjectId`), and
         #       (b) it is not shown in the "requirements" document.
@@ -64,11 +71,6 @@ def get_sample(
         sample = dict(sample_mapping)
         del sample["_id"]
         return sample
-    else:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Failed to find a sample having Sample_ID: '{sample_id}'",
-        )
 
 
 def get_custom_openapi_schema():
