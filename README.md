@@ -257,6 +257,7 @@ Here are some things I am considering doing for this project.
    [`pymongo.errors.BulkWriteError`](https://pymongo.readthedocs.io/en/stable/api/pymongo/errors.html#pymongo.errors.BulkWriteError)
    exception because the collection has a "unique" index consisting of those two fields. Since that exception is not
    being caught, the parser crashes.
-4. Resolve the conceptual issue resulting from the existence of an API endpoint that returns a sample specified by its
-   `Sample_ID` alone, and the absence of a unique index on that field alone. Currently, the database can
-   contain multiple records having the same `Sample_ID` value, as long as they have different `Study_Code` values.
+4. Resolve the issue resulting from the combination of (a) the presence of an API endpoint that returns a
+   sample specified by its `Sample_ID` alone and (b) the absence of a "unique" index on that field alone. Currently, a
+   collection can contain multiple records having the same `Sample_ID` value,
+   as long as their `Study_Code` values differ from one another.
