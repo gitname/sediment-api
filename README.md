@@ -121,7 +121,7 @@ Instructions for doing those things are in the "Development" section below.
 
 This repository contains a Docker-based development environment.
 
-You can configure the development environment by copying the `./.env.example` file and naming it `.env`; like this:
+You can configure the development environment by copying the `.env.example` file and naming it `.env`; like this:
 
 ```shell
 cp .env.example .env
@@ -129,7 +129,7 @@ cp .env.example .env
 
 > **Note:** The values in `env.example` (and, now, `.env`) are already sufficient for the development environment.
 
-You can instantiate the development environment by issuing the following command:
+You can then instantiate the development environment by issuing the following command:
 
 ```shell
 docker-compose up
@@ -141,7 +141,7 @@ docker-compose up --build
 > **Note:** That will cause Docker to instantiate a container for each service described in `docker-compose.yml`.
 
 With the development environment up and running, you can access a `bash` shell running on the `app` container
-(i.e. the container that has Python and all the script dependencies installed) by issuing the following command:
+(i.e. the container that has Python and all the scripts' dependencies installed) by issuing the following command:
 
 ```shell
 docker exec -it app bash
