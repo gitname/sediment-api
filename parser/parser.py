@@ -1,7 +1,7 @@
 from os import environ as env
 import csv
 from pathlib import Path
-from typing import List
+from typing import List, Iterable
 from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 from pymongo.results import InsertManyResult
@@ -42,7 +42,7 @@ def parse_csv_file(file_path: Path) -> List[dict]:
     :param file_path: Absolute path to CSV file
     :return: List of dictionaries, each of which represents a row of data
     """
-    dictionaries = []
+    sanitized_rows: List[dict] = []
 
     with open(file_path, newline="") as f:
         # Read the column names from the first row of the CSV file.
@@ -50,9 +50,9 @@ def parse_csv_file(file_path: Path) -> List[dict]:
         col_names = next(reader)
 
         # Read the sample data from the remaining rows of the CSV file.
-        dict_reader = csv.DictReader(f, fieldnames=col_names)
-        for row_dict in dict_reader:
-            sanitized_row_dict = dict()
+        dict_reader: Iterable[dict] = csv.DictReader(f, fieldnames=col_names)
+        for row in dict_reader:
+            sanitized_row = dict()
 
             # Build a dictionary consisting of this row's values,
             # in which invalid values are represented by `None`.
@@ -61,17 +61,17 @@ def parse_csv_file(file_path: Path) -> List[dict]:
             #       (a) it is in a metadata column (e.g. the "Sample_ID" column), or
             #       (b) when parsed as a float, it is >= 0 (e.g. "-1" is invalid).
             #
-            for col_name, value in row_dict.items():
+            for col_name, value in row.items():
                 if col_name in METADATA_COLUMN_NAMES:
-                    sanitized_row_dict[col_name] = value  # use as-is
+                    sanitized_row[col_name] = value  # use as-is
                 elif is_at_least_zero_when_float(value):
-                    sanitized_row_dict[col_name] = value  # use as-is
+                    sanitized_row[col_name] = value  # use as-is
                 else:
-                    sanitized_row_dict[col_name] = None  # use `None`
+                    sanitized_row[col_name] = None  # use `None`
 
-            dictionaries.append(sanitized_row_dict)
+            sanitized_rows.append(sanitized_row)
 
-    return dictionaries
+    return sanitized_rows
 
 
 def store_samples_in_database(samples: List[dict]) -> InsertManyResult:
