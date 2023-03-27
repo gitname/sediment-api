@@ -25,14 +25,14 @@
 
 ## Overview
 
-This repository contains Python scripts people can use to extract data from a CSV file,
+This repository contains Python scripts people can use to extract data from CSV files,
 store that data in a MongoDB database,
 and provide access to that data via an HTTP API.
 
 The scripts are:
 
 1. `parser/parser.py`: A file parser people can use to extract data from a CSV file and insert it into a database
-2. `server/server.py`: A web server people can use to access that data via an HTTP API
+2. `server/server.py`: A web server people can use to provide access to that data via an HTTP API
 
 Here's a diagram showing how data flows into, between, and out of those scripts.
 
@@ -118,34 +118,38 @@ Instructions for doing those things are in the "Development" section below.
 
 ## Development
 
-> **Note:** Unless otherwise specified, all commands shown in this section are written under the assumption you are in
-> the root folder of the repository.
+> **Note:** You can issue all the commands shown in this section from the root folder of the repository.
 
 ### Environment
 
 This repository contains a Docker-based development environment.
 
-You can configure the development environment by copying the `.env.example` file and naming it `.env`; like this:
+You can configure the development environment (and the Python scripts) by copying the `.env.example` file
+and naming it `.env`.
 
 ```shell
 cp .env.example .env
 ```
 
-> **Note:** The values in `env.example` (and, now, `.env`) are already sufficient for the development environment.
+> **Note:** The default values in `.env.example` are sufficient for running the Python scripts in the
+> the development environment.
 
 You can then instantiate the development environment by issuing the following command:
 
 ```shell
 docker-compose up
 
-# Or, if you've made changes to the Dockerfile or `requirements.txt`:
+# Or, if you've made changes to the Dockerfile or to `requirements.txt`:
 docker-compose up --build
 ```
 
 > **Note:** That will cause Docker to instantiate a container for each service described in `docker-compose.yml`.
+> - The `mongo` container will automatically start running MongoDB.
+> - The `app` container, which has all the Python scripts' dependencies installed,
+>   will automatically start running the web server.
 
 With the development environment up and running, you can access a `bash` shell running on the `app` container
-(i.e. the container that has Python and all the scripts' dependencies installed) by issuing the following command:
+by issuing the following command:
 
 ```shell
 docker exec -it app bash
@@ -187,7 +191,7 @@ docker exec -it app mypy
 
 ### Code formatting
 
-The code in this project is formatted using [Black](https://black.readthedocs.io/en/stable/), which is
+The Python code in this repository is formatted using [Black](https://black.readthedocs.io/en/stable/), which is
 an "[opinionated](https://black.readthedocs.io/en/stable/the_black_code_style/index.html)"—but still PEP 8-compliant—code
 formatter.
 
@@ -204,7 +208,7 @@ docker exec -it app black .
 
 ### Dependencies
 
-I wrote the Python scripts in this repository using Python version `3.10.10`.
+I wrote the Python scripts in this repository using Python 3.10.
 
 The `requirements.txt` file contains a list of all the dependencies of the Python scripts in this repository.
 I generated the file by issuing the following command:
@@ -217,7 +221,7 @@ pip freeze > requirements.txt
 docker exec -it app pip freeze > requirements.txt
 ```
 
-The table below contains the names of all the packages I explicitly installed via `pip install <name>` while writing the Python scripts in this repository:
+The table below contains the names of all the packages I explicitly installed via `pip install <name>`:
 
 | Name                | Description                | I use it to...                  | References                                                     |
 |---------------------|----------------------------|---------------------------------|----------------------------------------------------------------|
@@ -251,3 +255,6 @@ Here are some things I am considering doing for this project.
    whose `Study_Code` and `Sample_ID` (together) match those of an existing sample, crashes the parser (since the
    `pymongo.errors.BulkWriteError` exception is not being caught). That exception is raised because the MongoDB
    collection has a "unique" index consisting of those two fields.
+4. Resolve the conceptual issue resulting from the existence of an API endpoint that returns a sample specified by its
+   `Sample_ID` alone, and the absence of a unique index on that field alone. Currently, the database can
+   contain multiple records having the same `Sample_ID` value, as long as they have different `Study_Code` values.
