@@ -1,5 +1,8 @@
 # Sediment API
 
+<!-- Reference: https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/adding-a-workflow-status-badge -->
+![test](https://github.com/gitname/sediment-api/actions/workflows/test.yml/badge.svg)
+
 > Welcome to the Sediment API repository! I wrote the code in this repository as part of an exercise.
 > The exercise prompt was, in summary, to (a) write a Python script someone could use to extract data records
 > from a CSV file and store them in a MongoDB database;
