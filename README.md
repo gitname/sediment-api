@@ -70,7 +70,7 @@ flowchart LR
 
 ### Exercise-specific
 
-Here's how you can demonstrate the behavior described in the exercise prompt.
+Here's how you can produce the behavior described in the exercise prompt.
 
 1. Install [Docker](https://www.docker.com/) onto your computer.
 2. Clone (or download and extract) this repository onto your computer.
@@ -119,7 +119,7 @@ Instructions for doing those things are in the "Development" section below.
 
 ### Environment
 
-This repository contains a [Docker](https://www.docker.com/)-based development environment.
+This repository contains a Docker-based development environment.
 
 You can configure the development environment by copying the `./.env.example` file and naming it `.env`; like this:
 
@@ -200,7 +200,20 @@ docker exec -it app black .
 
 ### Dependencies
 
-Here are all the packages I explicitly installed via `pip install <name>` while implementing the parser and server:
+I wrote the Python scripts in this repository using Python version `3.10.10`.
+
+The `requirements.txt` file contains a list of all the dependencies of the Python scripts in this repository.
+I generated (and updated) the file by issuing the following command:
+
+```shell
+# From the `app` container:
+pip freeze > requirements.txt
+
+# Or, from the Docker host:
+docker exec -it app pip freeze > requirements.txt
+```
+
+The table below contains the names of all the packages I explicitly installed via `pip install <name>` while writing the Python scripts in this repository:
 
 | Name                | Description                | I use it to...                  | References                                                     |
 |---------------------|----------------------------|---------------------------------|----------------------------------------------------------------|
@@ -213,17 +226,6 @@ Here are all the packages I explicitly installed via `pip install <name>` while 
 | `python-dotenv`     | Configuration loader       | Read the `.env` file            | [Documentation](https://pypi.org/project/python-dotenv/)       |
 | `typer[all]`        | CLI framework              | Process CLI input and output    | [Documentation](https://typer.tiangolo.com/)                   |
 | `uvicorn[standard]` | ASGI web server            | Serve the FastAPI app           | [Documentation](https://www.uvicorn.org/)                      |
-
-The `requirements.txt` file contains a list of all the dependencies of the parser and the server.
-I generated it by issuing the following command:
-
-```shell
-# From the `app` container:
-pip freeze > requirements.txt
-
-# Or, from the Docker host:
-docker exec -it app pip freeze > requirements.txt
-```
 
 > **Note:** Packages listed in `requirements.txt` that are not listed above, are packages that were automatically
 > installed by `pip` when I installed the packages listed above. In other words, they are "dependencies of
@@ -243,5 +245,5 @@ Here are some things I am considering doing for this project.
 2. Update the parser to strip leading/trailing whitespace from the values extracted from the CSV file.
 3. Update the parser so the call to `insert_many` is wrapped within a `try/except`. Currently, trying to insert a sample
    whose `Study_Code` and `Sample_ID` (together) match those of an existing sample, crashes the parser (since the
-   `pymongo.errors.BulkWriteError` exception is not being caught.) That exception is raised because the MongoDB
+   `pymongo.errors.BulkWriteError` exception is not being caught). That exception is raised because the MongoDB
    collection has a "unique" index consisting of those two fields.
