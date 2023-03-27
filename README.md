@@ -1,8 +1,9 @@
 # Sediment API
 
-> Hello! I wrote the code in this repository as an exercise. The exercise prompt was, in summary, to (a) write a Python
-> script someone could use to extract data from a CSV file and store that data in a MongoDB database; and (b) create an
-> HTTP API that accepts requests for a single item (identified by its `Sample_ID`) and returns that item in JSON format.
+> Welcome to the Sediment API repository! I wrote the code in this repository as part of an exercise.
+> The exercise prompt was, in summary, to (a) write a Python script someone could use to extract data records
+> from a CSV file and store them in a MongoDB database;
+> and (b) create an HTTP API that someone could use to retrieve a data record in JSON format.
 
 ## Table of contents
 
@@ -203,7 +204,7 @@ docker exec -it app black .
 I wrote the Python scripts in this repository using Python version `3.10.10`.
 
 The `requirements.txt` file contains a list of all the dependencies of the Python scripts in this repository.
-I generated (and updated) the file by issuing the following command:
+I generated the file by issuing the following command:
 
 ```shell
 # From the `app` container:
