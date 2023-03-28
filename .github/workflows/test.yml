@@ -9,7 +9,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install --no-cache-dir --upgrade -r requirements.txt
       - name: Create `.env` file
         run: cp .env.example .env
       - name: Run tests
