@@ -101,10 +101,9 @@ Here's how you can produce the behavior described in the exercise prompt.
 Here's how you can use the system in general.
 
 1. Do steps 1-5 shown in the "Exercise-specific" section above.
-2. (Optional) Put a custom CSV file you want to parse, anywhere within the repository's file tree.
-   > **Note:** All files within the repository's file tree are accessible from within the `app` container,
-   > per the `volumes` mapping defined in `docker-compose.yml` (within the `app` container, the root folder
-   > of the repository is located at `/code`).
+2. (Optional) Put a CSV file you want to parse, anywhere within the repository's file tree.
+   > **Note:** All files within the repository's file tree are accessible within the `app` container
+   > (within the `app` container, the root folder of the repository is located at `/code`).
 3. Run the parser, specifying the path to the CSV file you want to parse.
    ```shell
    # Specify the path as it would be specified within the `app` container.
