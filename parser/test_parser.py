@@ -97,7 +97,7 @@ def temp_file_path() -> Iterator[Path]:
 
 
 class TestParseCsvFile:
-    def test_it_preserves_column_names_verbatim(self, temp_file_path):
+    def test_it_preserves_column_names_verbatim(self, temp_file_path: Path):
         # Populate the CSV file.
         with open(temp_file_path, "w") as f:
             print("""AAA, 12-3 4. ,ccc\n1,2,3""", file=f)
@@ -110,7 +110,7 @@ class TestParseCsvFile:
             "ccc": "3",
         }
 
-    def test_it_sanitizes_metadata_values(self, temp_file_path):
+    def test_it_sanitizes_metadata_values(self, temp_file_path: Path):
         # Populate the CSV file.
         with open(temp_file_path, "w") as f:
             print("""Study_Code,Sample_ID,C\naaa, 12-3 4. ,3""", file=f)
@@ -123,7 +123,7 @@ class TestParseCsvFile:
             "C": "3",
         }
 
-    def test_it_sanitizes_data_values(self, temp_file_path):
+    def test_it_sanitizes_data_values(self, temp_file_path: Path):
         # Populate the CSV file.
         with open(temp_file_path, "w") as f:
             print(
@@ -147,7 +147,7 @@ class TestParseCsvFile:
             "J": None,  # raw value: "-9999"
         }
 
-    def test_it_parses_data_rows_into_samples(self, temp_file_path):
+    def test_it_parses_data_rows_into_samples(self, temp_file_path: Path):
         # Populate the CSV file.
         with open(temp_file_path, "w") as f:
             print(
