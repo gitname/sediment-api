@@ -7,7 +7,8 @@ import pymongo.errors
 import pytest
 from .parser import (
     parse_csv_file,
-    is_at_least_zero_when_float,
+    sanitize_data_value,
+    sanitize_metadata_value,
     store_samples_in_database,
 )
 
@@ -109,7 +110,7 @@ class TestParseCsvFile:
             "ccc": "3",
         }
 
-    def test_it_preserves_metadata_values_verbatim(self, temp_file_path):
+    def test_it_sanitizes_metadata_values(self, temp_file_path):
         # Populate the CSV file.
         with open(temp_file_path, "w") as f:
             print("""Study_Code,Sample_ID,C\naaa, 12-3 4. ,3""", file=f)
@@ -117,12 +118,12 @@ class TestParseCsvFile:
         # Parse it into samples and compare to expectation.
         samples = parse_csv_file(temp_file_path)
         assert samples[0] == {
-            "Study_Code": "aaa",
-            "Sample_ID": " 12-3 4. ",
+            "Study_Code": "aaa",  # no change
+            "Sample_ID": "12-3 4.",  # stripped leading/trailing whitespace
             "C": "3",
         }
 
-    def test_it_nullifies_invalid_data_values(self, temp_file_path):
+    def test_it_sanitizes_data_values(self, temp_file_path):
         # Populate the CSV file.
         with open(temp_file_path, "w") as f:
             print(
@@ -134,13 +135,13 @@ class TestParseCsvFile:
         # Parse it into samples and compare to expectation.
         samples = parse_csv_file(temp_file_path)
         assert samples[0] == {
-            "Study_Code": "x",
-            "Sample_ID": "y",
+            "Study_Code": "x",  # (metadata value)
+            "Sample_ID": "y",  # (metadata value)
             "C": "0",
             "D": "0.1",
             "E": "1",
             "F": "1.",
-            "G": "1e2",
+            "G": None,  # raw value: "1e2"
             "H": None,  # raw value: "z"
             "I": None,  # raw value: "-0.1"
             "J": None,  # raw value: "-9999"
@@ -194,39 +195,66 @@ class TestParseCsvFile:
         }
 
 
-class TestIsAtLeastZeroWhenFloat:
-    def test_it_detects_valid_strings(self):
-        assert is_at_least_zero_when_float("0") is True
-        assert is_at_least_zero_when_float("-0") is True
-        assert is_at_least_zero_when_float("+0") is True  # leading + on zero
-        assert is_at_least_zero_when_float("1") is True
-        assert is_at_least_zero_when_float("+1") is True  # leading +
-        assert is_at_least_zero_when_float("1.") is True  # trailing period
-        assert is_at_least_zero_when_float("0.1") is True
-        assert is_at_least_zero_when_float("1.1") is True
-        assert is_at_least_zero_when_float("9999") is True
-        assert is_at_least_zero_when_float("1e23") is True  # scientific notation
-        assert is_at_least_zero_when_float("1E23") is True
-        assert is_at_least_zero_when_float("1_000") is True  # _ for grouping (PEP 515)
-        assert is_at_least_zero_when_float("1_3_5_7") is True  # major seven chord
-        assert is_at_least_zero_when_float(" 1 ") is True  # surrounding whitespace
+class TestSanitizeMetadataValue:
+    def test_it_strips_surrounding_whitespace(self):
+        assert sanitize_metadata_value(" Foo") == "Foo"
+        assert sanitize_metadata_value("Foo ") == "Foo"
+        assert sanitize_metadata_value(" Foo ") == "Foo"
+        assert sanitize_metadata_value("  Foo  ") == "Foo"
+        assert sanitize_metadata_value("  Foo Bar  ") == "Foo Bar"
 
-    def test_it_detects_invalid_strings(self):
-        assert is_at_least_zero_when_float("-1") is False
-        assert is_at_least_zero_when_float("-0.1") is False
-        assert is_at_least_zero_when_float("-1.1") is False
-        assert is_at_least_zero_when_float("-9999") is False
-        assert is_at_least_zero_when_float("A") is False  # hex
-        assert is_at_least_zero_when_float("0xA") is False  # hex with 0x prefix
-        assert is_at_least_zero_when_float("") is False
-        assert is_at_least_zero_when_float(" ") is False
-        assert is_at_least_zero_when_float("1 2") is False  # mid-string whitespace
-        assert is_at_least_zero_when_float("1+1") is False  # operation
-        assert is_at_least_zero_when_float("1,000") is False  # comma
-        assert is_at_least_zero_when_float("_1000") is False  # leading _
-        assert is_at_least_zero_when_float("1000_") is False  # trailing _
-        assert is_at_least_zero_when_float("1__000") is False  # double _
-        assert is_at_least_zero_when_float("(1)") is False
+    def test_it_preserves_null_values(self):
+        # Note: This situation can arise when the number of column names > the number of values in a given row.
+        # Reference: https://docs.python.org/3/library/csv.html#csv.DictReader
+        assert sanitize_metadata_value(None) is None
+
+
+class TestSanitizeDataValue:
+    def test_it_strips_surrounding_whitespace(self):
+        assert sanitize_data_value(" 0") == "0"
+        assert sanitize_data_value("0 ") == "0"
+        assert sanitize_data_value(" 0 ") == "0"
+        assert sanitize_data_value("  0  ") == "0"
+        assert sanitize_data_value("  0.0  ") == "0.0"
+
+    def test_it_preserves_valid_strings(self):
+        # Decimal places:
+        assert sanitize_data_value("0") == "0"
+        assert sanitize_data_value("0.") == "0."
+        assert sanitize_data_value(".0") == ".0"
+        assert sanitize_data_value("0.0") == "0.0"
+        assert sanitize_data_value("00") == "00"
+        assert sanitize_data_value("00.00") == "00.00"
+
+        # Different digits:
+        assert sanitize_data_value("1") == "1"
+        assert sanitize_data_value("123.456") == "123.456"
+        assert sanitize_data_value("9999999999.9999999999") == "9999999999.9999999999"
+
+    def test_it_nullifies_invalid_strings(self):
+        assert sanitize_data_value("") is None
+        assert sanitize_data_value(".") is None
+        assert sanitize_data_value("0..0") is None
+        assert sanitize_data_value("0.0.") is None
+        assert sanitize_data_value(".0.0") is None
+        assert sanitize_data_value("A") is None
+        assert sanitize_data_value("0x1") is None
+        assert sanitize_data_value("+1") is None  # +/- sign
+        assert sanitize_data_value("+0") is None
+        assert sanitize_data_value("-0") is None
+        assert sanitize_data_value("-9999") is None  # negative number
+        assert sanitize_data_value("1e2") is None
+        assert sanitize_data_value("1E2") is None
+        assert sanitize_data_value("1,000") is None
+        assert sanitize_data_value("1_000") is None
+        assert sanitize_data_value("1 000") is None
+        assert sanitize_data_value("1-1") is None
+        assert sanitize_data_value("(1)") is None
+
+    def test_it_preserves_null_values(self):
+        # Note: This situation can arise when the number of column names > the number of values in a given row.
+        # Reference: https://docs.python.org/3/library/csv.html#csv.DictReader
+        assert sanitize_data_value(None) is None
 
 
 class TestStoreSamplesInDatabase:

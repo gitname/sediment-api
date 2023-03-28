@@ -1,7 +1,8 @@
 from os import environ as env
 import csv
+import re
 from pathlib import Path
-from typing import List, Iterable
+from typing import List, Dict, Iterable, Optional, TypeAlias
 from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
 from pymongo.results import InsertManyResult
@@ -16,58 +17,80 @@ console = Console()
 # Reference: https://github.com/theskumar/python-dotenv#getting-started
 load_dotenv(verbose=True)
 
+# Type alias for a dictionary created from a row of a CSV file.
+RowDict: TypeAlias = Dict[str, Optional[str]]
+
 # Names of columns whose values this script will use verbatim (i.e. will not sanitize).
 METADATA_COLUMN_NAMES = ["Study_Code", "Sample_ID"]
 
 
-def is_at_least_zero_when_float(s: str) -> bool:
-    """
-    Checks whether the specified string, when parsed as a float, is >= 0.
-
-    :param s: The string you want to check (e.g. "123", "-1.23")
-    :return: `True` if the equivalent float is >= 0; otherwise, `False`
-    """
-    result = False  # assume `False` until proven otherwise
-    try:
-        result = True if float(s) >= 0 else False
-    except (TypeError, ValueError, OverflowError):
-        pass
-    return result
+# Regular expression this script can use to validate data extracted from data columns.
+# Note: Matches "1", "2.", "3.4", ".5", "0.67890", etc.; and does not match "." alone.
+VALID_DATA_REGEX = re.compile(r"^\d+\.?\d*$|^\.?\d+$")
 
 
-def parse_csv_file(file_path: Path) -> List[dict]:
+def sanitize_metadata_value(raw_value: Optional[str]) -> Optional[str]:
     """
-    Parses the specified CSV file into a list of dictionaries.
+    Returns a sanitized version of a value originating in a metadata column of a CSV file.
+
+    Sanitization rules:
+    - If the raw value is not a string, it will be sanitized to `None`.
+    - If the raw string has leading/trailing whitespace, that whitespace will be removed.
+
+    :param raw_value: The raw value you want to sanitize
+    :return: The sanitized value
+    """
+    if type(raw_value) is str:
+        stripped_str = raw_value.strip()
+        return stripped_str
+    else:
+        return None
+
+
+def sanitize_data_value(raw_value: Optional[str]) -> Optional[str]:
+    """
+    Returns a sanitized version of a value originating in a data column of a CSV file.
+
+    Sanitization rules:
+    - If the raw value is not a string, it will be sanitized to `None`.
+    - If the raw string has leading/trailing whitespace, that whitespace will be removed.
+    - If the raw string does not consist solely of a number equal to or greater than 0,
+      the string will be sanitized to `None`.
+
+    :param raw_value: The raw value you want to sanitize
+    :return: The sanitized value
+    """
+    if type(raw_value) is str:
+        stripped_str = raw_value.strip()
+        return stripped_str if VALID_DATA_REGEX.match(stripped_str) else None
+    else:
+        return None
+
+
+def parse_csv_file(file_path: Path) -> List[RowDict]:
+    """
+    Parses the specified CSV file into a list of sanitary dictionaries.
 
     :param file_path: Absolute path to CSV file
     :return: List of dictionaries, each of which represents a row of data
     """
-    sanitized_rows: List[dict] = []
+    sanitary_rows = []
 
     with open(file_path, newline="") as f:
         # Parse each row of the CSV file (except the first row) into a dictionary,
         # using the column names from the first row as the dictionary's keys.
-        dict_reader: Iterable[dict] = csv.DictReader(f)
-        for row in dict_reader:
-            # Build a "sanitized" dictionary based upon this row (i.e. a dictionary
-            # in which invalid values from this row are represented by `None`).
-            #
-            # Note: A value is invalid unless either:
-            #       (a) it is in a metadata column (e.g. the "Sample_ID" column), or
-            #       (b) when parsed as a float, it is >= 0 (e.g. "-1" is invalid).
-            #
-            sanitized_row = dict()
-            for col_name, raw_value in row.items():
-                if col_name in METADATA_COLUMN_NAMES:
-                    sanitized_row[col_name] = raw_value  # use as-is
-                elif is_at_least_zero_when_float(raw_value):
-                    sanitized_row[col_name] = raw_value  # use as-is
+        dict_reader: Iterable[RowDict] = csv.DictReader(f)
+        for row_dict in dict_reader:
+            # Build a "sanitized" dictionary based upon this row.
+            sanitary_row = {}
+            for column_name, value in row_dict.items():
+                if column_name in METADATA_COLUMN_NAMES:
+                    sanitary_row[column_name] = sanitize_metadata_value(value)
                 else:
-                    sanitized_row[col_name] = None  # use `None`
+                    sanitary_row[column_name] = sanitize_data_value(value)
+            sanitary_rows.append(sanitary_row)
 
-            sanitized_rows.append(sanitized_row)
-
-    return sanitized_rows
+    return sanitary_rows
 
 
 def store_samples_in_database(samples: List[dict]) -> InsertManyResult:
