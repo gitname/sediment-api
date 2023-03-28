@@ -60,9 +60,9 @@ def get_sample(
             detail=f"Failed to find a sample having Sample_ID: '{sample_id}'",
         )
     else:
-        # Return a version of the result that does not contain the `_id` item,
-        # since (a) that item is not serializable to JSON (it's an `ObjectId`), and
-        #       (b) it is not shown in the "requirements" document.
+        # Return a version of the result that does not contain the `_id` field,
+        # since (a) its value is not serializable to JSON (it's an `ObjectId`), and
+        #       (b) it is not present in the example in the exercise prompt.
         #
         # Note: Since `find_one` returns a `Mapping` (not a `dict`) and PyCharm says
         #       I cannot use `del` on a `Mapping`, I first convert the `Mapping`
