@@ -2,7 +2,7 @@ from os import environ as env
 import csv
 import re
 from pathlib import Path
-from typing import List, Dict, Iterable, Optional, TypeAlias
+from typing import List, Dict, Iterable, Optional, TypeAlias, Any
 
 from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING, errors
@@ -93,12 +93,12 @@ def parse_csv_file(file_path: Path) -> List[RowDict]:
     return sanitary_rows
 
 
-def store_samples_in_database(samples: List[dict]) -> List[int]:
+def store_samples_in_database(samples: List[dict]) -> List[Any]:
     """
     Stores samples in the MongoDB database specified by environment variables.
 
     :param samples: List of dictionaries, each of which represents a sample
-    :return: MongoDB `InsertManyResult`
+    :return: List of the MongoDB `_id`s of the successfully stored samples
     """
 
     # Insert the data into the database.
@@ -143,7 +143,7 @@ def store_samples_in_database(samples: List[dict]) -> List[int]:
     #       - https://pymongo.readthedocs.io/en/stable/api/pymongo/results.html#pymongo.results.BulkWriteResult.inserted_count
     #       - https://github.com/mongodb/mongo-python-driver/blob/065b02bcb3ff6d8c088e4934105b9158f48d7074/pymongo/bulk.py#L98
     #
-    inserted_ids: List[int] = []
+    inserted_ids = []
     for sample in samples:
         try:
             result = collection.insert_one(sample)
