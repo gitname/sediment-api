@@ -176,7 +176,8 @@ docker exec -it app pytest
 
 > **Note:** You can invoke `pytest` with the `-v` option to see a list of the tests that were run.
 
-In addition, you can measure code coverage while running the tests by issuing the following command:
+In addition, you can use the tool, [coverage](https://coverage.readthedocs.io/), to measure code coverage while running
+the tests—and to subsequently display a code coverage report—by issuing the following command:
 
 ```shell
 # From the `app` container:
