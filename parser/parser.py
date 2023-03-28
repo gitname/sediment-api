@@ -132,12 +132,12 @@ def store_samples_in_database(samples: List[dict]) -> List[int]:
     #       index in the collection, the function would raise a `pymongo.errors.BulkWriteError`
     #       exception and the remaining samples would not be inserted. While that exception object
     #       does contain a property named `nInserted` (which I suspect indicates the number of
-    #       records that were successfully inserted), I failed to find first-party documentation
+    #       records that were successfully inserted), I failed to find official documentation
     #       about that property. So, I am hesitant to rely on it. However, I still want to be able
-    #       to give the user actionable information in the case of a failure. For that reason,
-    #       I am performing the inserts one by one (trading performance for usability) and manually
-    #       keeping track of how many--and which--records are not successfully inserted.
-
+    #       to display an actionable error message. For that reason, I updated this script to perform
+    #       the inserts one by one (trading performance for usability), relying only on features
+    #       about which I found official documentation.
+    #
     #       References:
     #       - https://pymongo.readthedocs.io/en/stable/api/pymongo/errors.html#pymongo.errors.BulkWriteError
     #       - https://pymongo.readthedocs.io/en/stable/api/pymongo/results.html#pymongo.results.BulkWriteResult.inserted_count
