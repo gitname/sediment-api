@@ -53,7 +53,7 @@ def get_sample(
     collection = db[env["MONGO_COLLECTION_NAME"]]
     sample_mapping = collection.find_one({"Sample_ID": sample_id})
 
-    # Return the sample, or return an error if the sample was not found.
+    # Return the sample, or raise an exception if the sample was not found.
     if sample_mapping is None:
         raise HTTPException(
             status_code=404,
