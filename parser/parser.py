@@ -54,7 +54,7 @@ def sanitize_data_value(raw_value: Optional[str]) -> Optional[str]:
     Sanitization rules:
     - If the raw value is not a string, it will be sanitized to `None`.
     - If the raw string has leading/trailing whitespace, that whitespace will be removed.
-    - If the raw string does not consist solely of a number equal to or greater than 0,
+    - If the remaining string does not consist solely of a number equal to or greater than 0,
       the string will be sanitized to `None`.
 
     :param raw_value: The raw value you want to sanitize
