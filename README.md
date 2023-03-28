@@ -168,11 +168,25 @@ following command:
 
 ```shell
 # From the `app` container:
-pytest -v
+pytest
 
 # Or, from the Docker host:
-docker exec -it app pytest -v
+docker exec -it app pytest
 ```
+
+> **Note:** You can invoke `pytest` with the `-v` option to see a list of the tests that were run.
+
+In addition, you can measure code coverage while running the tests by issuing the following command:
+
+```shell
+# From the `app` container:
+coverage run -m pytest && coverage report
+
+# Or, from the Docker host:
+docker exec -it app bash -c "coverage run -m pytest && coverage report"
+```
+
+> **Note:** You can invoke `coverage report` with the `-m` option to see which lines were "missed" (i.e. weren't executed).
 
 ### Static type checking
 
@@ -226,17 +240,18 @@ docker exec -it app pip freeze > requirements.txt
 
 The table below contains the names of all the packages I explicitly installed via `pip install <name>`:
 
-| Name                | Description                | I use it to...                  | References                                                     |
-|---------------------|----------------------------|---------------------------------|----------------------------------------------------------------|
-| `black`             | Code formatter             | Format Python code              | [Documentation](https://black.readthedocs.io/en/stable)        |
-| `fastapi`           | HTTP API framework         | Process HTTP requests           | [Documentation](https://fastapi.tiangolo.com/)                 |
-| `httpx`             | HTTP client                | Submit HTTP requests (in tests) | [Documentation](https://www.python-httpx.org/)                 |
-| `mypy`              | Static type checker        | Verify data type consistency    | [Documentation](https://mypy.readthedocs.io/en/latest/)        |
-| `pymongo`           | Synchronous MongoDB driver | Interact with the database      | [Documentation](https://www.mongodb.com/docs/drivers/pymongo/) |
-| `pytest`            | Test framework             | Run the tests                   | [Documentation](https://docs.pytest.org/en/7.2.x/)             |
-| `python-dotenv`     | Configuration loader       | Read the `.env` file            | [Documentation](https://pypi.org/project/python-dotenv/)       |
-| `typer[all]`        | CLI framework              | Process CLI input and output    | [Documentation](https://typer.tiangolo.com/)                   |
-| `uvicorn[standard]` | ASGI web server            | Serve the FastAPI app           | [Documentation](https://www.uvicorn.org/)                      |
+| Name                | Description                    | I use it to...                  | References                                                     |
+|---------------------|--------------------------------|---------------------------------|----------------------------------------------------------------|
+| `black`             | Code formatter                 | Format Python code              | [Documentation](https://black.readthedocs.io/en/stable)        |
+| `coverage`          | Code coverage measurement tool | Measure test coverage           | [Documentation](https://coverage.readthedocs.io/)                 |
+| `fastapi`           | HTTP API framework             | Process HTTP requests           | [Documentation](https://fastapi.tiangolo.com/)                 |
+| `httpx`             | HTTP client                    | Submit HTTP requests (in tests) | [Documentation](https://www.python-httpx.org/)                 |
+| `mypy`              | Static type checker            | Verify data type consistency    | [Documentation](https://mypy.readthedocs.io/en/latest/)        |
+| `pymongo`           | Synchronous MongoDB driver     | Interact with the database      | [Documentation](https://www.mongodb.com/docs/drivers/pymongo/) |
+| `pytest`            | Test framework                 | Run the tests                   | [Documentation](https://docs.pytest.org/en/7.2.x/)             |
+| `python-dotenv`     | Configuration loader           | Read the `.env` file            | [Documentation](https://pypi.org/project/python-dotenv/)       |
+| `typer[all]`        | CLI framework                  | Process CLI input and output    | [Documentation](https://typer.tiangolo.com/)                   |
+| `uvicorn[standard]` | ASGI web server                | Serve the FastAPI app           | [Documentation](https://www.uvicorn.org/)                      |
 
 > **Note:** Packages listed in `requirements.txt` that are not listed above, are packages that were automatically
 > installed by `pip` when I installed the packages listed above. In other words, they are "dependencies of
