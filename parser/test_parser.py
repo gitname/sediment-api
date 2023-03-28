@@ -272,7 +272,7 @@ class TestStoreSamplesInDatabase:
             db_sample = collection.find_one({"Sample_ID": ex_sample["Sample_ID"]})
             assert ex_sample == db_sample
 
-    def test_it_continues_when_encountering_existing_sample_id_study_code_pair(
+    def test_it_resumes_after_encountering_existing_sample_id_study_code_pair(
         self, db_client: pymongo.MongoClient, example_samples: List[dict]
     ):
         # Modify the example samples list so both the `Study_Code` and `Sample_ID` values
@@ -282,7 +282,7 @@ class TestStoreSamplesInDatabase:
         inserted_ids = store_samples_in_database(example_samples)
         assert len(inserted_ids) == len(example_samples) - 1  # all but one
 
-        # Verify only the first and third example samples are in the collection.
+        # Verify all example samples except the second one are in the collection.
         db = db_client[env["MONGO_DATABASE_NAME"]]
         collection = db[env["MONGO_COLLECTION_NAME"]]
         assert collection.count_documents({}) == len(example_samples) - 1  # all but one
