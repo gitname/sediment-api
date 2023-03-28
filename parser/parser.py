@@ -20,7 +20,7 @@ load_dotenv(verbose=True)
 # Type alias for a dictionary created from a row of a CSV file.
 RowDict: TypeAlias = Dict[str, Optional[str]]
 
-# Names of columns whose values this script will use verbatim (i.e. will not sanitize).
+# Names of columns whose values this script will treat as "metadata" (as opposed to "data").
 METADATA_COLUMN_NAMES = ["Study_Code", "Sample_ID"]
 
 
