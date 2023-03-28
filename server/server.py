@@ -80,14 +80,13 @@ def get_custom_openapi_schema():
     """
     # If the app lacks a "cached" schema, create and cache one.
     if not app.openapi_schema:
-        openapi_schema = get_openapi(
+        # Effectively "cache" the schema for future reference.
+        app.openapi_schema = get_openapi(
             title="sediment-api",
             version="0.1.0",
             description="Sediment API",
             routes=app.routes,
         )
-        # Effectively "cache" the schema for future reference.
-        app.openapi_schema = openapi_schema
     return app.openapi_schema
 
 
