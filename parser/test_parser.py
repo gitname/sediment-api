@@ -261,34 +261,32 @@ class TestStoreSamplesInDatabase:
     def test_it_stores_samples_in_database(
         self, db_client: pymongo.MongoClient, example_samples: List[dict]
     ):
-        result = store_samples_in_database(example_samples)
-
-        # Examine the return value.
-        assert len(result.inserted_ids) == len(example_samples)
+        inserted_ids = store_samples_in_database(example_samples)
+        assert len(inserted_ids) == len(example_samples)
 
         # Verify each of the example samples is in the collection.
         db = db_client[env["MONGO_DATABASE_NAME"]]
         collection = db[env["MONGO_COLLECTION_NAME"]]
-        assert collection.count_documents({}) == len(example_samples)
+        assert collection.count_documents({}) == len(example_samples)  # all
         for ex_sample in example_samples:
             db_sample = collection.find_one({"Sample_ID": ex_sample["Sample_ID"]})
             assert ex_sample == db_sample
 
-    def test_it_aborts_when_encountering_existing_sample_id_study_code_pair(
+    def test_it_continues_when_encountering_existing_sample_id_study_code_pair(
         self, db_client: pymongo.MongoClient, example_samples: List[dict]
     ):
         # Modify the example samples list so both the `Study_Code` and `Sample_ID` values
         # match between the first two samples. Note: the `Study_Code` already does match.
         example_samples[1]["Sample_ID"] = example_samples[0]["Sample_ID"]
 
-        # Expect the function-under-test to raise an exception.
-        with pytest.raises(pymongo.errors.BulkWriteError):
-            store_samples_in_database(example_samples)
+        inserted_ids = store_samples_in_database(example_samples)
+        assert len(inserted_ids) == len(example_samples) - 1  # all but one
 
-        # Verify only the first example sample is in the collection.
+        # Verify only the first and third example samples are in the collection.
         db = db_client[env["MONGO_DATABASE_NAME"]]
         collection = db[env["MONGO_COLLECTION_NAME"]]
-        assert collection.count_documents({}) == 1  # not 2 or 3
-        ex_sample = example_samples[0]
-        db_sample = collection.find_one({"Sample_ID": ex_sample["Sample_ID"]})
-        assert ex_sample == db_sample
+        assert collection.count_documents({}) == len(example_samples) - 1  # all but one
+        for idx, ex_sample in enumerate(example_samples):
+            if idx not in [1]:
+                db_sample = collection.find_one({"Sample_ID": ex_sample["Sample_ID"]})
+                assert ex_sample == db_sample

@@ -3,9 +3,9 @@ import csv
 import re
 from pathlib import Path
 from typing import List, Dict, Iterable, Optional, TypeAlias
+
 from dotenv import load_dotenv
-from pymongo import MongoClient, ASCENDING
-from pymongo.results import InsertManyResult
+from pymongo import MongoClient, ASCENDING, errors
 from rich.console import Console  # Note: `rich` is installed as part of `typer[all]`
 import typer
 
@@ -93,7 +93,7 @@ def parse_csv_file(file_path: Path) -> List[RowDict]:
     return sanitary_rows
 
 
-def store_samples_in_database(samples: List[dict]) -> InsertManyResult:
+def store_samples_in_database(samples: List[dict]) -> List[int]:
     """
     Stores samples in the MongoDB database specified by environment variables.
 
@@ -125,13 +125,33 @@ def store_samples_in_database(samples: List[dict]) -> InsertManyResult:
         [("Sample_ID", ASCENDING), ("Study_Code", ASCENDING)], unique=True
     )
 
-    # Insert the samples.
+    # Insert the samples into the collection.
     #
-    # Note: This raises a `pymongo.errors.BulkWriteError` exception if any of the items being
-    #       inserted violate the unique index.
+    # Note: An earlier version of this script used the `collection.insert_many` function to insert
+    #       all samples into the collection in bulk. If any of those samples violated the "unique"
+    #       index in the collection, the function would raise a `pymongo.errors.BulkWriteError`
+    #       exception and the remaining samples would not be inserted. While that exception object
+    #       does contain a property named `nInserted` (which I suspect indicates the number of
+    #       records that were successfully inserted), I failed to find first-party documentation
+    #       about that property. So, I am hesitant to rely on it. However, I still want to be able
+    #       to give the user actionable information in the case of a failure. For that reason,
+    #       I am performing the inserts one by one (trading performance for usability) and manually
+    #       keeping track of how many--and which--records are not successfully inserted.
+
+    #       References:
+    #       - https://pymongo.readthedocs.io/en/stable/api/pymongo/errors.html#pymongo.errors.BulkWriteError
+    #       - https://pymongo.readthedocs.io/en/stable/api/pymongo/results.html#pymongo.results.BulkWriteResult.inserted_count
+    #       - https://github.com/mongodb/mongo-python-driver/blob/065b02bcb3ff6d8c088e4934105b9158f48d7074/pymongo/bulk.py#L98
     #
-    ids = collection.insert_many(samples)
-    return ids
+    inserted_ids: List[int] = []
+    for sample in samples:
+        try:
+            result = collection.insert_one(sample)
+            inserted_ids.append(result.inserted_id)
+        except errors.WriteError:
+            console.print(f"[red]Failed[/red] to store sample in database: {sample}")
+
+    return inserted_ids
 
 
 def main(
@@ -159,10 +179,10 @@ def main(
     if is_debugging:
         console.log(samples)
 
-    result = store_samples_in_database(samples)
-    console.print(f"Stored {len(result.inserted_ids)} samples in the database.")
+    inserted_ids = store_samples_in_database(samples)
+    console.print(f"Stored {len(inserted_ids)} samples in the database.")
     if is_debugging:
-        console.log(result.inserted_ids)
+        console.log(inserted_ids)
 
 
 if __name__ == "__main__":
