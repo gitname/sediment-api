@@ -269,7 +269,3 @@ Here are some additional things I'm thinking about doing in this repository:
    (c) [filter out](https://fastapi.tiangolo.com/tutorial/response-model/#fastapi-data-filtering)
    the `_id` field from the API response. Item (a) would happen in `parser.py` and items (b) and (c) would happen
    in `server.py`. Items (a) and (c) are already happening, but not via a Pydantic model.
-2. Resolve the inconsistency between (a) the presence of an API endpoint that returns a
-   sample specified by its `Sample_ID` alone and (b) the absence of a "unique" index on that field alone. Currently, a
-   collection can contain multiple records having the same `Sample_ID` value,
-   as long as their `Study_Code` values differ from one another.

@@ -116,14 +116,12 @@ def store_samples_in_database(samples: List[dict]) -> List[Any]:
     db = mongo_client[env["MONGO_DATABASE_NAME"]]
     collection = db[env["MONGO_COLLECTION_NAME"]]
 
-    # Create an index of the "Sample_ID" values, since the web server will query by those values.
-    collection.create_index([("Sample_ID", ASCENDING)])
-
-    # Create a (compound) unique index of the two metadata columns, to prevent data duplication
-    # in case, for example, this script gets run multiple times (i.e. re-processes the same file).
-    collection.create_index(
-        [("Sample_ID", ASCENDING), ("Study_Code", ASCENDING)], unique=True
-    )
+    # Create an index (with a "unique" constraint) of the "Sample_ID" values.
+    #
+    # Note: The "unique" constraint makes it so that no two documents in the collection can have
+    #       the same "Sample_ID" value as one another.
+    #
+    collection.create_index([("Sample_ID", ASCENDING)], unique=True)
 
     # Insert the samples into the collection.
     #
