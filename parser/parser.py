@@ -13,7 +13,7 @@ import typer
 console = Console()
 
 # Load variables defined in the `.env` file, into the `os.environ` dictionary.
-# Note: Existing environment variables get priority; i.e. won't be overridden.
+# Note: System environment variables get priority; i.e. won't be overridden.
 # Reference: https://github.com/theskumar/python-dotenv#getting-started
 load_dotenv(verbose=True)
 
