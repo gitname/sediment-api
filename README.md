@@ -133,7 +133,7 @@ and naming it `.env`.
 cp .env.example .env
 ```
 
-> **Note:** The default values in `.env.example` are sufficient for running the Python scripts in the
+> **Note:** The default values in `.env.example` are adequate for running the Python scripts in
 > the development environment.
 
 You can then instantiate the development environment by issuing the following command:
@@ -186,7 +186,8 @@ coverage run -m pytest && coverage report
 docker exec -it app bash -c "coverage run -m pytest && coverage report"
 ```
 
-> **Note:** You can invoke `coverage report` with the `-m` option to see which lines were "missed" (i.e. weren't executed).
+> **Note:** You can invoke `coverage report` with the `-m` option (as in, `coverage report -m`) to see which lines of
+> code were "missed" (i.e. not executed).
 
 ### Static type checking
 
@@ -204,7 +205,7 @@ mypy
 docker exec -it app mypy
 ```
 
-> Note: When you run `mypy` as shown above, it will run according to the configuration specified in `mypy.ini`.
+> **Note:** When you run `mypy` as shown above, it will run according to the configuration specified in `mypy.ini`.
 
 ### Code formatting
 
