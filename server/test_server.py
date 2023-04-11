@@ -32,10 +32,7 @@ def seeded_db(monkeypatch: pytest.MonkeyPatch) -> Iterator[Database]:
     )
     db = mongo_client[db_name]
     collection = db[env["MONGO_COLLECTION_NAME"]]
-    collection.create_index([("Sample_ID", ASCENDING)])
-    collection.create_index(
-        [("Sample_ID", ASCENDING), ("Study_Code", ASCENDING)], unique=True
-    )
+    collection.create_index([("Sample_ID", ASCENDING)], unique=True)
     collection.insert_many(
         [
             {
